@@ -13,7 +13,7 @@ Web Interface<br>
 <b>Requisiten:</b>
 
 ESP32 Wrover Board mit PCM5100A 32bit Stereo DAC 'HiFi-ESP32' https://github.com/sonocotta/esp32-audio-dock<br>
-Das Board passt genau in ein Raspberry Pi Gehäuse.
+Das Board passt genau in ein Raspberry Pi Gehäuse.<br>
 Alternativ kann jedes ESP32 Wrover Board mit 4Mb Flash und 4Mb PSRam verwendet werden (ohne DAC)<br>
 ToslinkBee SPDIF zu I2S Converter:<br> 
 https://www.audiophonics.fr/en/interface-modules/tinysine-toslinkbee-interface-module-spdif-optical-to-i2s-dir9001-cs8421-24bit-96khz-p-18397.html<br>
@@ -70,9 +70,9 @@ Die Software ist für die Arduino IDE gedacht.<br>
 
 Leider ist der Dynamic Compressor in der arduino-audio-tools library nur für mono Betrieb ausgelegt.<br>
 Für Stereo Betrieb musste ich die files AudioEffects.h and AudioEffect.h modifizieren.<br>
-Kopiere die files AudioEffects.h and AudioEffect.h in den Arduino library folder: Arduino\libraries\audio-tools\src\AudioTools\CoreAudio\AudioEffects\<br>
+Kopiere die files AudioEffects.h and AudioEffect.h in den Arduino library folder:<br>Arduino\libraries\audio-tools\src\AudioTools\CoreAudio\AudioEffects<br>
 Falls du die Original files verwenden möchtest, musst du die Zeilen mit 'Compressor_Stereo' und 'Compressor_Active' in der Compressor4.ino auskommentieren. 
-Der Compressor arbeitet dann im mono Betrieb.<br>
+Der Compressor arbeitet dann im mono Betrieb<br>
 Alles weitere siehe Compressor4.ino
 
 Die Schaltung tut was sie soll, aber bei hohen Kompressionsraten neigt sie leider zur 'Überkompression', d.h bei lauten Passagen wird das Signal etwas zu stark zurückgeregelt.<br>
