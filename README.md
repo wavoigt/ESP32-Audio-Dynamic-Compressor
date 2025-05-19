@@ -57,7 +57,7 @@ Optionaler ADC: PCM1802 Stereo-A/D-Wandler, erhältlich bei Amazon
 Die Software ist für die Arduino IDE gedacht.<br>
 - Compressor4.ino<br>
 - CompHtmlServer.h im Compressor4 Ordner<br>
-- Audio Library https://github.com/pschatzmann/arduino-audio-tools (thx to pschatzmann for this great audio processing library)<br>
+- Audio Library https://github.com/pschatzmann/arduino-audio-tools (thx to pschatzmann for his great audio processing library)<br>
 
 <b>Anleitung:</b>
 
@@ -66,3 +66,4 @@ Für Stereo Betrieb musste ich die files AudioEffects.h and AudioEffect.h modifi
 Kopiere die files AudioEffects.h and AudioEffect.h in den Arduino library folder: Arduino\libraries\audio-tools\src\AudioTools\CoreAudio\<br>
 Falls du die Original files verwenden möchtest, musst du die Zeilen mit 'Compressor_Stereo' und 'Compressor_Active' in der Compressor4.ino auskommentieren. 
 Der Compressor arbeitet dann im mono Betrieb.<br>
+Alles weitere siehe Compressor4.ino
