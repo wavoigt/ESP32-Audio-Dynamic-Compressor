@@ -8,8 +8,13 @@
  */ 
 
 // Audio Compressor mit Web Interface Siehe CompHtmlServer.h
-// ESP32 Wrover Kit
-// Minimal SPIFFS with OTA
+// Board: ESP32 Wrover Kit (also for HiFi-ESP32 Board)
+// Partition Scheme: Minimal SPIFFS with OTA
+
+// For Stereo Compressor using modified versions of AudioEffects.h and AudioEffect.h
+// Copy the modified files into the Arduino library folder: Arduino\libraries\audio-tools\src\AudioTools\CoreAudio\AudioEffects\ 
+// If you are using the original Audio Tools library, you have to comment the lines with 'Compressor_Stereo' and 'Compressor_Active'.
+// in this case, the compressor is working in mono mode.
 
 // # Test Output to SPDIF:
 // If you encounter some quality issues you can increase the DEFAULT_BUFFER_SIZE (e.g. to 2048) 
@@ -23,7 +28,6 @@
 #include "HttpServer.h"   // https://github.com/pschatzmann/TinyHttp
 #include "AudioTools.h"   // https://github.com/pschatzmann/arduino-audio-tools.git
 #include "AudioTools/AudioLibs/SPDIFOutput.h"
-// D:\Dokumente\ELEKTRONIK\Arduino\libraries\audio-tools\src\AudioTools\CoreAudio\AudioEffects
 #include "CompHtmlServer.h"
 #include <ArduinoOTA.h>
 #include <Preferences.h>
@@ -161,7 +165,7 @@ void setup(void) {
   
   pinMode(RGB_LED, OUTPUT);
   digitalWrite(RGB_LED, LOW);
-  Compressor_Stereo  = true;
+  Compressor_Stereo  = true; // comment if using original AudioEffects.h
   
   // Get Preferences
   preferences.begin("Compressor", false);
@@ -241,6 +245,6 @@ void setup(void) {
 void loop() {
   copier.copy();
   server.copy();
-  if (Compressor_Active) digitalWrite(RGB_LED, HIGH); else digitalWrite(RGB_LED, LOW);
+  if (Compressor_Active) digitalWrite(RGB_LED, HIGH); else digitalWrite(RGB_LED, LOW); // comment if using original AudioEffects.h
   ArduinoOTA.handle();
 }
