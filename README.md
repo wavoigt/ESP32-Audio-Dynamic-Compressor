@@ -16,4 +16,11 @@ Software:
 Die Software ist für die Arduino IDE gedacht.
 Compressor4.ino
 CompHtmlServer.h im Compressor4 Ordner
-Audio Library https://github.com/pschatzmann/arduino-audio-tools
+Audio Library https://github.com/pschatzmann/arduino-audio-tools (thx to pschatzmann for this great audio processing library)
+
+Anleitung:
+
+Leider ist der Dynamic Compressor in der arduino-audio-tools library nur für mono Betrieb ausgelegt.<br>
+Für Stereo Betrieb musste ich die files AudioEffects.h and AudioEffect.h modifizieren.<br>
+Kopiere die files AudioEffects.h and AudioEffect.h in den Arduino library folder: Arduino\libraries\audio-tools\src\AudioTools\CoreAudio\<br>
+Falls du die Original files verwenden möchtest, musst du die Zeilen mit 'Compressor_Stereo' und 'Compressor_Active' in der Compressor4.ino auskommentieren.<br>
