@@ -70,7 +70,7 @@ Die Software ist für die Arduino IDE gedacht.<br>
 
 Leider ist der Dynamic Compressor in der arduino-audio-tools library nur für mono Betrieb ausgelegt.<br>
 Für Stereo Betrieb musste ich die files AudioEffects.h and AudioEffect.h modifizieren.<br>
-Kopiere die files AudioEffects.h and AudioEffect.h in den Arduino library folder: Arduino\libraries\audio-tools\src\AudioTools\CoreAudio\<br>
+Kopiere die files AudioEffects.h and AudioEffect.h in den Arduino library folder: Arduino\libraries\audio-tools\src\AudioTools\CoreAudio\AudioEffects\<br>
 Falls du die Original files verwenden möchtest, musst du die Zeilen mit 'Compressor_Stereo' und 'Compressor_Active' in der Compressor4.ino auskommentieren. 
 Der Compressor arbeitet dann im mono Betrieb.<br>
 Alles weitere siehe Compressor4.ino
