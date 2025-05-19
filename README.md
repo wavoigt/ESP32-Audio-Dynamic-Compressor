@@ -1,5 +1,6 @@
 # ESP32 Audio Dynamic Compressor
-<b>mit digitalem Ein- und Ausgang und Analogausgang, optional mit analogem Eingang</b>
+<b>mit digitalem Ein- und Ausgang und Analogausgang, optional mit analogem Eingang,<br>
+Web Interface zur Steuerung und OTA Programmierung.<b>
 
 ![Compressor_Board_small](https://github.com/user-attachments/assets/570caf30-9aeb-4b0c-b139-afd848521b73)
 
