@@ -2,11 +2,18 @@
 <b>mit digitalem Ein- und Ausgang und Analogausgang, optional mit analogem Eingang,<br>
 Web Interface zur Steuerung und OTA Programmierung.</b>
 
+Ich verwende diese Schaltung zwischen TV und Soundsystem, um die zum Teil sehr hohe Dynamik von Spielfilmen einzuschränken.<br>
+Diese Anleitung ist nicht für Anfänger gedacht.<br> Grundlegende Kenntnisse in Programmierung mit der Arduino IDE setze ich voraus.
+
 ![Compressor_Board_small](https://github.com/user-attachments/assets/570caf30-9aeb-4b0c-b139-afd848521b73)
+
+Web Interface<br>
+![WebInterface](https://github.com/user-attachments/assets/3b8c5aef-7430-4c4a-8d2b-5738e23c4913) 
 
 <b>Requisiten:</b>
 
 ESP32 Wrover Board mit PCM5100A 32bit Stereo DAC 'HiFi-ESP32' https://github.com/sonocotta/esp32-audio-dock<br>
+Das Board passt genau in ein Raspberry Pi Gehäuse.
 Alternativ kann jedes ESP32 Wrover Board mit 4Mb Flash und 4Mb PSRam verwendet werden (ohne DAC)<br>
 ToslinkBee SPDIF zu I2S Converter:<br> 
 https://www.audiophonics.fr/en/interface-modules/tinysine-toslinkbee-interface-module-spdif-optical-to-i2s-dir9001-cs8421-24bit-96khz-p-18397.html<br>
@@ -67,3 +74,7 @@ Kopiere die files AudioEffects.h and AudioEffect.h in den Arduino library folder
 Falls du die Original files verwenden möchtest, musst du die Zeilen mit 'Compressor_Stereo' und 'Compressor_Active' in der Compressor4.ino auskommentieren. 
 Der Compressor arbeitet dann im mono Betrieb.<br>
 Alles weitere siehe Compressor4.ino
+
+Die Schaltung tut was sie soll, aber bei hohen Kompressionsraten neigt sie leider zur 'Überkompression', d.h bei lauten Passagen wird das Signal etwas zu stark zurückgeregelt.<br>
+Ich empfehle die Einstellung der Ratio etwa bei 50%, das entspricht -6db.<br> 
+Ideen und Verbesserungsvorschläge sind willkommen :-)
