@@ -50,7 +50,7 @@ Optionaler ADC: PCM1802 Stereo-A/D-Wandler, erhältlich bei Amazon
   </tr>
   <tr>
     <td>TOSLINK OUT</td>
-    <td>GPIO23</td>
+    <td>GPIO23 (MOSI)</td>
     <td></td>
     <td></td>
     <td>5V</td>
