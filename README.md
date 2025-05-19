@@ -73,6 +73,7 @@ Für Stereo Betrieb musste ich die files AudioEffects.h and AudioEffect.h modifi
 Kopiere die files AudioEffects.h and AudioEffect.h in den Arduino library folder:<br>Arduino\libraries\audio-tools\src\AudioTools\CoreAudio\AudioEffects<br>
 Falls du die Original files verwenden möchtest, musst du die Zeilen mit 'Compressor_Stereo' und 'Compressor_Active' in der Compressor4.ino auskommentieren. 
 Der Compressor arbeitet dann im mono Betrieb<br>
+In CompHtmlServer.h müssen die Wifi Zugangsdaten eingetragen werden. <br>
 Alles weitere siehe Compressor4.ino
 
 Die Schaltung tut was sie soll, aber bei hohen Kompressionsraten neigt sie leider zur 'Überkompression', d.h bei lauten Passagen wird das Signal etwas zu stark zurückgeregelt.<br>
