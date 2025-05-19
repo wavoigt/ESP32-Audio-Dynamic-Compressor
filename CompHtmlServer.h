@@ -1,10 +1,11 @@
+#pragma once
 #include "HttpServer.h"
 
 // Server
 WiFiServer wifi;
 HttpServer server(wifi);
-const char *ssid = "FRITZ7490V";
-const char *password = "zaubergarten16";
+const char *ssid = "YOUR SSID";
+const char *password = "YOUR PASSWORD";
 
 static const char PROGMEM INDEX_HTML[] = R"rawliteral(
 <!DOCTYPE html>
