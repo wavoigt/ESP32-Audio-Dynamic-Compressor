@@ -66,7 +66,6 @@ class AudioEffectCommon {
 
     protected:
         Vector<AudioEffect*> effects;
-
 };
 
 /**
