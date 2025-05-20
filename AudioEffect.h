@@ -16,7 +16,6 @@ bool Compressor_Stereo = false;
 bool Compressor_Active = false;
 effect_t sampleArr[2];
 
-
 /**
  * @brief Abstract Base class for Sound Effects
  * @ingroup effects
