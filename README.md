@@ -33,7 +33,7 @@ Optionaler ADC: PCM1802 Stereo-A/D-Wandler, erhältlich bei Amazon
     <th>GND</th>
 </tr>
   <tr>
-    <td>PCM1802 (onboard)</td>
+    <td>PCM5100A (onboard)</td>
     <td>GPIO22</td>
     <td>GPIO26</td>
     <td>GPIO25</td>
