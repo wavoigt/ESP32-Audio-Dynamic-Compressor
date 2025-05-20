@@ -1,4 +1,4 @@
-# ESP32 Audio Dynamic Compressor
+# ESP32 Audio Dynamic Compressor / Limiter
 <b>mit digitalem Ein- und Ausgang und Analogausgang, optional mit analogem Eingang,<br>
 Web Interface zur Steuerung und OTA Programmierung.</b>
 
@@ -10,7 +10,7 @@ Diese Anleitung ist nicht für Anfänger gedacht.<br> Grundlegende Kenntnisse in
 Web Interface<br>
 ![WebInterface](https://github.com/user-attachments/assets/3b8c5aef-7430-4c4a-8d2b-5738e23c4913) 
 
-<b>Requisiten:</b>
+<b>Hardware:</b>
 
 ESP32 Wrover Board mit PCM5100A 32bit Stereo DAC 'HiFi-ESP32' https://github.com/sonocotta/esp32-audio-dock<br>
 Das Board passt genau in ein Raspberry Pi Gehäuse.<br>
