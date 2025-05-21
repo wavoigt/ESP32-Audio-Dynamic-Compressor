@@ -1,6 +1,9 @@
 # ESP32 Audio Dynamic Compressor / Limiter
 <b>mit digitalem Ein- und Ausgang und Analogausgang, optional mit analogem Eingang,<br>
-Web Interface zur Steuerung und OTA Programmierung.</b>
+Web Interface zur Steuerung und OTA Programmierung.
+
+with digital input and output and analogue output, optionally with analogue input, <br>
+Web interface for control and OTA programming. English -> scroll down</b>
 
 Ich verwende diese Schaltung zwischen TV und Soundsystem, um die zum Teil sehr hohe Dynamik von Spielfilmen einzuschränken.<br>
 Diese Anleitung ist nicht für Anfänger gedacht.<br> Grundlegende Kenntnisse in Programmierung mit der Arduino IDE setze ich voraus.
@@ -76,6 +79,27 @@ Der Compressor arbeitet dann im mono Betrieb<br>
 In CompHtmlServer.h müssen die Wifi Zugangsdaten eingetragen werden. <br>
 Alles weitere siehe Compressor4.ino
 
-Die Schaltung tut was sie soll, aber bei hohen Kompressionsraten neigt sie leider zur 'Überkompression', d.h bei lauten Passagen wird das Signal etwas zu stark zurückgeregelt.<br>
-Ich empfehle die Einstellung der Ratio etwa bei 50%, das entspricht -6db.<br> 
-Ideen und Verbesserungsvorschläge sind willkommen :-)
+Ich verwende diese Schaltung zwischen TV und Soundsystem, um die zum Teil sehr hohe Dynamik von Spielfilmen einzuschränken.
+Diese Anleitung ist nicht für Anfänger gedacht.
+Grundlegende Kenntnisse in Programmierung mit der Arduino IDE setze ich voraus.
+
+# English:
+
+I use this circuit between TV and sound system to limit the high dynamics of feature films. <br>
+These instructions are not intended for beginners. <br>
+Basic knowledge of programming with the Arduino IDE is required. <br>
+
+Unfortunately, the Dynamic Compressor in the arduino-audio-tools library is only designed for mono operation. <br>
+For stereo operation I had to modify the files AudioEffects.h and AudioEffect.h. <br>
+Copy the files AudioEffects.h and AudioEffect.h into the Arduino library folder: <br>
+Arduino\libraries\audio-tools\src\AudioTools\CoreAudio\AudioEffects <br>
+If you want to use the original files, you must comment out the lines with ‘Compressor_Stereo’ and ‘Compressor_Active’ in Compressor4.ino. <br>
+The compressor then works in mono mode. <br>
+The Wifi access data must be entered in CompHtmlServer.h. <br>
+For everything else, see Compressor4.ino <br>
+
+The circuit does what it should, but at high compression rates it unfortunately tends to ‘overcompress’, i.e. the signal is reduced too much in loud passages. <br>
+I recommend setting the ratio to around 50%, which corresponds to -6db. <br>
+Ideas and suggestions for improvement are welcome :-)
+
+Translated with DeepL.com (free version)
