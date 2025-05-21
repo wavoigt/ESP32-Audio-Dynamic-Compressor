@@ -79,9 +79,9 @@ Der Compressor arbeitet dann im mono Betrieb<br>
 In CompHtmlServer.h müssen die Wifi Zugangsdaten eingetragen werden. <br>
 Alles weitere siehe Compressor4.ino
 
-Ich verwende diese Schaltung zwischen TV und Soundsystem, um die zum Teil sehr hohe Dynamik von Spielfilmen einzuschränken.
-Diese Anleitung ist nicht für Anfänger gedacht.
-Grundlegende Kenntnisse in Programmierung mit der Arduino IDE setze ich voraus.
+Die Schaltung tut was sie soll, aber bei hohen Kompressionsraten neigt sie leider zur 'Überkompression', d.h bei lauten Passagen wird das Signal etwas zu stark zurückgeregelt. <br>
+Ich empfehle die Einstellung der Ratio etwa bei 50%, das entspricht -6db. <br>
+Ideen und Verbesserungsvorschläge sind willkommen :-)
 
 # English:
 
