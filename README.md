@@ -8,7 +8,7 @@ Web interface for control and OTA programming. English -> scroll down</b>
 Ich verwende diese Schaltung zwischen TV und Soundsystem, um die zum Teil sehr hohe Dynamik von Spielfilmen einzuschränken.<br>
 Diese Anleitung ist nicht für Anfänger gedacht.<br> Grundlegende Kenntnisse in Programmierung mit der Arduino IDE setze ich voraus.
 
-![Compressor_Board_small](https://github.com/user-attachments/assets/570caf30-9aeb-4b0c-b139-afd848521b73)
+![Compr_von_oben_kl](https://github.com/user-attachments/assets/a5108c59-f7f9-48c5-bd7a-d229d6821879)
 
 Web Interface<br>
 ![WebInterface](https://github.com/user-attachments/assets/3b8c5aef-7430-4c4a-8d2b-5738e23c4913) 
