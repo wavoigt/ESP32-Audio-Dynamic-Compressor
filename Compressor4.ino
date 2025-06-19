@@ -11,11 +11,6 @@
 // Board: ESP32 Wrover Kit (also for HiFi-ESP32 Board)
 // Partition Scheme: Minimal SPIFFS with OTA
 
-// For Stereo Compressor using modified versions of AudioEffects.h and AudioEffect.h
-// Copy the modified files into the Arduino library folder: Arduino\libraries\audio-tools\src\AudioTools\CoreAudio\AudioEffects\ 
-// If you are using the original Audio Tools library, you have to comment the lines with 'Compressor_Stereo' and 'Compressor_Active'.
-// in this case, the compressor is working in mono mode.
-
 // # Test Output to SPDIF:
 // If you encounter some quality issues you can increase the DEFAULT_BUFFER_SIZE (e.g. to 2048) 
 // and I2S_BUFFER_SIZE/I2S_BUFFER_COUNT
@@ -23,11 +18,13 @@
 #define USE_AUDIO_LOGGING true // false = less memory
 #define RGB_LED 12 // pull down, must be low at boot
 // #define TEST_GENERATOR
+#define TOS_LINK
 
 #include <ArduinoJson.h>  // https://arduinojson.org/
 #include "HttpServer.h"   // https://github.com/pschatzmann/TinyHttp
 #include "AudioTools.h"   // https://github.com/pschatzmann/arduino-audio-tools.git
 #include "AudioTools/AudioLibs/SPDIFOutput.h"
+// Arduino\libraries\audio-tools\src\AudioTools\CoreAudio\AudioEffects
 #include "CompHtmlServer.h"
 #include <ArduinoOTA.h>
 #include <Preferences.h>
@@ -43,7 +40,7 @@ AudioInfo info(sample_rate, channels, bits_per_sample);
 float ratiopct = 50;          // Ratio in %
 float ratio = ratiopct / 100; // Ratio
 uint8_t threshold = 100;      // Threshold in %
-uint16_t attackTime = 20;     // Attack-Zeit in ms
+uint16_t attackTime = 10;     // Attack-Zeit in ms
 uint16_t releaseTime = 100;   // Release-Zeit in ms
 uint16_t holdTime = 10;       // Hold-Zeit in ms
 
@@ -54,24 +51,27 @@ Compressor compressor (sample_rate, attackTime, releaseTime, holdTime, threshold
   // Test with Sine Generator
   SineWaveGenerator<int16_t> sineWave(32000);     // subclass of SoundGenerator with max amplitude of 32000
   GeneratedSoundStream<int16_t> sound(sineWave);  // Stream generated from sine wave
-  I2SStream out;  // DA Wandler
-  AudioEffectStream effects(sound); // input
-  StreamCopy copier(out, effects);  // copies effects into i2s
+  AudioEffectStream effects(sound);   // input
 #else
   // Streams
   I2SStream in;     // Toslink in
-  SPDIFOutput out;  // Toslink out
   AudioEffectStream effects(in);   // input
-  StreamCopy copier(out, effects); // copies effects into i2s
 #endif
+
+#ifdef TOS_LINK
+  SPDIFOutput out;  // Toslink out
+#else
+  I2SStream out;  // DAC
+#endif
+StreamCopy copier(out, effects); // copies effects into i2s
+
 
 // Update values in effects
 void updateValues(){
   compressor.setCompressionRatio(ratio);
-  compressor.setThresholdPercent(threshold);
-  compressor.setAttack(attackTime);
-  compressor.setRelease(releaseTime);
-  compressor.setHold(holdTime);
+  compressor.setThresholdPercent((float)threshold);
+  compressor.setAttack((float)attackTime);
+  compressor.setRelease((float)releaseTime);
  }
 
 
@@ -81,20 +81,20 @@ void getJson(HttpServer * server, const char*requestPath, HttpRequestHandlerLine
     // DynamicJsonDocument doc(1024);
     JsonDocument doc;
     doc["RatioControl"]["value"] = ratiopct;
-    doc["RatioControl"]["min"] = 0;
+    doc["RatioControl"]["min"] = 10;
     doc["RatioControl"]["max"] = 100;
-    doc["RatioControl"]["step"] = 1;
+    doc["RatioControl"]["step"] = 10;
     doc["Threshold"]["value"] = threshold;
-    doc["Threshold"]["min"] = 5;
+    doc["Threshold"]["min"] = 10;
     doc["Threshold"]["max"] = 100;
     doc["Threshold"]["step"] = 1;
     doc["AttackTime"]["value"] = attackTime;
-    doc["AttackTime"]["min"] = 10;
-    doc["AttackTime"]["max"] = 1000;
-    doc["AttackTime"]["step"] = 10;
+    doc["AttackTime"]["min"] = 5;
+    doc["AttackTime"]["max"] = 100;
+    doc["AttackTime"]["step"] = 5;
     doc["ReleaseTime"]["value"] = releaseTime;
     doc["ReleaseTime"]["min"] = 10;
-    doc["ReleaseTime"]["max"] = 2000;
+    doc["ReleaseTime"]["max"] = 1000;
     doc["ReleaseTime"]["step"] = 10;
     serializeJson(doc, out);
   };
@@ -103,7 +103,7 @@ void getJson(HttpServer * server, const char*requestPath, HttpRequestHandlerLine
 }
 
 
-// Poroces Posted Json
+// Process Posted Json
 void postJson(HttpServer *server, const char*requestPath, HttpRequestHandlerLine *hl) {
   // post json to server
   // DynamicJsonDocument doc(1024);
@@ -165,7 +165,7 @@ void setup(void) {
   
   pinMode(RGB_LED, OUTPUT);
   digitalWrite(RGB_LED, LOW);
-  Compressor_Stereo  = true; // comment if using original AudioEffects.h
+  Compressor_Stereo  = true; // comment out if using original AudioEffects.h
   
   // Get Preferences
   preferences.begin("Compressor", false);
@@ -179,7 +179,7 @@ void setup(void) {
   Serial.begin(115200);
   // change to Warning to improve the quality
   #if USE_AUDIO_LOGGING == true  
-    AudioToolsLogger.begin(Serial, AudioToolsLogLevel::Warning); // oder Info
+    AudioToolsLogger.begin(Serial, AudioToolsLogLevel::Warning);
   #endif
 
   // Setup Server
@@ -191,27 +191,13 @@ void setup(void) {
 
   ota_Setup();
 
-  
 #ifdef TEST_GENERATOR
-  // start I2S out for DA converter
-  auto config_out = out.defaultConfig(TX_MODE);
-  config_out.copyFrom(info); 
-  config_out.i2s_format = I2S_STD_FORMAT;
-  config_out.is_master = true;
-  config_out.port_no = 0;
-  config_out.pin_bck = 26;
-  config_out.pin_ws = 25;
-  config_out.pin_data = 22;
-  out.begin(config_out);
-  Serial.println("I2S started...");
-
   // Generator
   sineWave.begin(info, 500);
   Serial.println("Generator started...");
 
 #else
   // start I2S in
-  Serial.println("starting I2S...");
   auto config_in = in.defaultConfig(RX_MODE);
   config_in.copyFrom(info); 
   config_in.i2s_format = I2S_STD_FORMAT;
@@ -220,31 +206,47 @@ void setup(void) {
   config_in.pin_data = 19;  // (MISO) // 22
   config_in.pin_bck = 18;   // (CLK)  // 14
   config_in.pin_ws = 14;    // (RST)  // 15
-  config_in.buffer_size = 256; // minimize lag
+  config_in.buffer_size = 384; // minimize lag 256
   config_in.buffer_count = 2;
   in.begin(config_in);
+  Serial.println("I2S started");
+#endif
 
+#ifdef TOS_LINK
   // start SPDIF out for TosLink
-  Serial.println("starting SPDIF...");
   auto config_out = out.defaultConfig();
   config_out.pin_data = 23; // (MOSI)
   config_out.port_no = 0;
   config_out.buffer_size = 384;
   config_out.buffer_count = 8;
   out.begin(config_out);
+  Serial.println("SPDIF started");
+#else
+  // start I2S out for DA converter
+  auto config_out = out.defaultConfig(TX_MODE);
+  config_out.copyFrom(info); 
+  config_out.i2s_format = I2S_STD_FORMAT;
+  config_out.is_master = true;
+  config_out.port_no = 0;
+  config_out.pin_data = 22;
+  config_out.pin_bck = 26;
+  config_out.pin_ws = 25;
+  out.begin(config_out);
+  Serial.println("D/A started");
 #endif
 
   // setup effects
   effects.addEffect(compressor);
   effects.begin(info);
   updateValues();
-  Serial.println("Compressor started...");
+  Serial.println("Compressor started");
 }
 
 // Arduino loop - copy data
 void loop() {
   copier.copy();
   server.copy();
-  if (Compressor_Active) digitalWrite(RGB_LED, HIGH); else digitalWrite(RGB_LED, LOW); // comment if using original AudioEffects.h
+  // comment our if using original AudioEffects.h
+  if (Compressor_Active) digitalWrite(RGB_LED, HIGH); else digitalWrite(RGB_LED, LOW); 
   ArduinoOTA.handle();
 }
