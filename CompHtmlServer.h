@@ -4,8 +4,8 @@
 // Server
 WiFiServer wifi;
 HttpServer server(wifi);
-const char *ssid = "YOUR SSID";
-const char *password = "YOUR PASSWORD";
+const char *ssid = "YOUR_SSID";
+const char *password = "YOUR_PW";
 
 static const char PROGMEM INDEX_HTML[] = R"rawliteral(
 <!DOCTYPE html>
@@ -59,19 +59,19 @@ static const char PROGMEM INDEX_HTML[] = R"rawliteral(
         <h1>Compressor</h1>
         <form id="effect-form" method='post' >
             <div>
-                Ratio 0-100%<br>
+                Ratio 10-100%<br>
                 <input type='range' class="slider" id='RatioControl' name='RatioControl' onchange="$('#effect-form').submit();" min='0' max='0' step='0' value='0' >
             </div>
             <div>
-                <br>Threshold 5-100%<br>
+                <br>Threshold 10-100%<br>
                 <input type='range' class="slider" id='Threshold' name='Threshold' onchange="$('#effect-form').submit();" min='0' max='0' step='0' value='0'>
             </div>
             <div>
-                <br>Attack 10-1000ms<br>
+                <br>Attack 5-100ms<br>
                 <input type='range' class="slider" id='AttackTime' name='AttackTime' onchange="$('#effect-form').submit();" min='0' max='0' step='0' value='0'>
             </div>
             <div>
-                <br>Release 10-2000ms<br>
+                <br>Release 10-1000ms<br>
                 <input type='range' class="slider" id='ReleaseTime' name='ReleaseTime' onchange="$('#effect-form').submit();" min='0' max='0' step='0' value='0'>
             </div>
         </form>
