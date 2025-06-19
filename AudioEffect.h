@@ -11,10 +11,26 @@ namespace audio_tools {
 // we use int16_t for our effects
 typedef int16_t effect_t;
 
-// for Stereo Compressor /Vo
-bool Compressor_Stereo = false;
+/*
+ * modified by W. Voigt for Stereo and Soft Knee Limiter
+ */
+bool Compressor_Stereo = true;
 bool Compressor_Active = false;
 effect_t sampleArr[2];
+
+// Gain 0.5 * cos(1-x); x = 0 - 1 (S-Form) for Soft Knee /Vo
+float cosx[] = { 
+0,0.00025,0.00099,0.00222,0.00394,0.00616,0.00886,0.01204,0.01571,0.01985,0.02447,
+0.02956,0.03511,0.04112,0.04759,0.05450,0.06185,0.06963,0.07784,0.08646,0.09549,
+0.10492,0.11474,0.12494,0.13552,0.14645,0.15773,0.16934,0.18129,0.19355,0.20611,
+0.21896,0.23209,0.24548,0.25912,0.27300,0.28711,0.30143,0.31594,0.33063,0.34549,
+0.36050,0.37566,0.39093,0.40631,0.42178,0.43733,0.45295,0.46860,0.48429,0.50000,
+0.51571,0.53140,0.54705,0.56267,0.57822,0.59369,0.60907,0.62434,0.63950,0.65451,
+0.66937,0.68406,0.69857,0.71289,0.72700,0.74088,0.75452,0.76791,0.78104,0.79389,
+0.80645,0.81871,0.83066,0.84227,0.85355,0.86448,0.87506,0.88526,0.89508,0.90451,
+0.91354,0.92216,0.93037,0.93815,0.94550,0.95241,0.95888,0.96489,0.97044,0.97553,
+0.98015,0.98429,0.98796,0.99114,0.99384,0.99606,0.99778,0.99901,0.99975,1.00000 };
+
 
 /**
  * @brief Abstract Base class for Sound Effects
@@ -464,6 +480,9 @@ protected:
  * @ingroup effects
  * @copyright GPLv3
 */
+/*
+ * modified by W. Voigt for Stereo and Soft Knee Limiter
+*/
 
 class Compressor : public AudioEffect { 
 public:    
@@ -471,57 +490,48 @@ public:
     Compressor(const Compressor &copy) = default;
 
     /// Default Constructor
-    Compressor(uint32_t sampleRate = 44100, uint16_t attackMs=20, uint16_t releaseMs=20, uint16_t holdMs=10, 
-               uint8_t thresholdPercent=100, float compressionRatio=0.5){
-        //assuming 1 sample = 1/96kHz = ~10us
-        //Attack -> 30 ms -> 3000
-        //Release -> 20 ms -> 2000
-        //Hold -> 10ms -> 1000
+    Compressor(float sampleRate = 44100, float attackMs=5, float releaseMs=200, float holdMs=10, 
+               float thresholdPercent=50, float compressionRatio=0.5){
         
-        // sample_rate = sample_rate * attackMs / 1000;  // this is wrong
-        sample_rate = sampleRate;  // should be like this /Vo
-        attack_count = sample_rate * attackMs / 1000;
-        release_count = sample_rate * releaseMs / 1000;
-        hold_count = sample_rate * holdMs / 1000; 
-
-        //threshold -20dB below limit -> 0.1 * 2^31
-        threshold = 0.01f * thresholdPercent * NumberConverter::maxValueT<effect_t>();
-        //compression ratio: 6:1 -> -6dB = 0.5
-        gainreduce = compressionRatio;
-        //initial gain = 1.0 -> no compression
-	      gain = 1.0f;
-        recalculate();
+        // Attack -> 10 ms -> 1000
+        // Release -> 20 ms -> 2000
+        
+        sample_rate = sampleRate; 
+	    target_gain = 1.0f;
+	    current_gain = 1.0f;
+        threshold = 0.01f * thresholdPercent;
+        ratio = 1 / compressionRatio;
+        kneeWidth = 0.2;
+        setAttack(attackMs);
+        setRelease(releaseMs);    
     }
 
     /// Defines the attack duration in ms
-    void setAttack(uint16_t attackMs){
-        attack_count = sample_rate * attackMs / 1000;
-        recalculate();
+    void setAttack(float attack_ms){
+        float attack_samples = sample_rate * (attack_ms / 1000.0);
+        attack_coeff = 1.0 / attack_samples; 
+        if (attack_coeff > 1.0) attack_coeff = 1.0;
+        else if (attack_coeff < 0.0) attack_coeff = 0.0;
     }
 
     /// Defines the release duration in ms
-    void setRelease(uint16_t releaseMs){
-        release_count = sample_rate * releaseMs / 1000;
-        recalculate();
-    }
-
-    /// Defines the hold duration in ms
-    void setHold(uint16_t holdMs){
-        hold_count = sample_rate * holdMs / 1000; 
-        recalculate();
+    void setRelease(float release_ms){
+        float release_samples = sample_rate * (release_ms / 1000.0);    
+        release_coeff = 1.0 / release_samples;
+        if (release_coeff > 1.0) release_coeff = 1.0;
+        else if (release_coeff < 0.0) release_coeff = 0.0;
     }
 
     /// Defines the threshod in %
     void setThresholdPercent(uint8_t thresholdPercent){
-        threshold = 0.01f * thresholdPercent * NumberConverter::maxValueT<effect_t>();
+        threshold = 0.01f * thresholdPercent;
     }
 
-    /// Defines the compression ratio from 0 to 1
+    /// Defines the compression ratio from 0.1 to 1
     void setCompressionRatio(float compressionRatio){
-      if (compressionRatio <= 1.0f){
-        gainreduce = compressionRatio;
-      }
-      recalculate();
+        if (compressionRatio > 1) compressionRatio = 1.0;
+        if (compressionRatio < 0.1) compressionRatio = 0.1;
+        ratio = 1 / compressionRatio;
     }
 
     /// Processes the sample
@@ -534,81 +544,65 @@ public:
     Compressor *clone() { return new Compressor(*this); }
 
 protected:
-    enum CompStates {S_NoOperation, S_Attack, S_GainReduction, S_Release };
-    enum CompStates state = S_NoOperation;
 
-    int32_t attack_count, release_count, hold_count,  timeout;
-    float gainreduce, gain_step_attack, gain_step_release, gain, threshold;
-    uint32_t sample_rate;
-    
-    void recalculate() {
-        gain_step_attack = (1.0f - gainreduce) / attack_count;
-        gain_step_release = (1.0f - gainreduce) / release_count;
-    }
-
+    float sample_rate, threshold, ratio, target_gain, current_gain;
+    float attack_coeff, release_coeff, kneeWidth;
 
     // modifiziert Stereo ------------------------------------------------------
     float compress(float inSampleF){
         
-        if (fabs(inSampleF) > threshold) {
-            if (gain >= gainreduce) {
-                if ((state == S_NoOperation) || (state == S_Release)) {
-                    state = S_Attack;
-                    timeout = attack_count;
-                    Compressor_Active = true;
-                }
-            }
-            if (state==S_GainReduction) timeout = hold_count;
-        }
-        else {
-            if (timeout == 0 && state == S_GainReduction && gain <= 1.0f) {
-                state=S_Release;
-                timeout = release_count;
-            }
-        }
+        float normalized_input = abs(inSampleF / 32767);
+        float normalized_output;
 
-        switch (state) {
-            case S_Attack:
-                if (timeout > 0 && gain > gainreduce) {
-                    gain -= gain_step_attack;
-                    timeout--;
-                }
-                else {
-                    state=S_GainReduction;
-                    timeout = hold_count;
-                }
-                break;
+        // Calculate knee bounds in linear amplitude; Ensure bounds don't go below zero
+        float lowerKneeBound = threshold - (kneeWidth / 2.0);
+        if (lowerKneeBound < 0.0) lowerKneeBound = 0.0;
+        
+        float upperKneeBound = threshold + (kneeWidth / 2.0);
 
-            case S_GainReduction:
-                if (timeout > 0)  timeout--;
-                else {
-                    state=S_Release;
-                    timeout = release_count;
-                }
-                break;
+        if (normalized_input <= lowerKneeBound) {
+            // Below knee: no compression, output equals input
+            normalized_output = normalized_input;
+        } else if (normalized_input >= upperKneeBound) {
+            // Above knee: full compression at the specified ratio
+            // normalized_output = Point where compression starts + (excess / ratio)
+            normalized_output = upperKneeBound + (normalized_input - upperKneeBound) / ratio;
+        } else {
+            // Within knee: Soft-knee compression
+            // Normalized position within the knee (0.0 to 1.0)
+            float normalized_position = (normalized_input - lowerKneeBound) / kneeWidth;
+            if (normalized_position > 1.0) normalized_position = 1.0;
+            else if (normalized_position < 0.0) normalized_position = 0.0; 
 
-            case S_Release:
-                if (timeout > 0 && gain < 1.0f) {
-                    timeout--;
-                    gain += gain_step_release;
-                }
-                else {
-                    state=S_NoOperation;
-                }
-                break;
+            // Apply cosine blend for smooth transition
+            float blend_factor = cosx[(int)(normalized_position * 100)]; // 0.0 to 1.0
 
-            case S_NoOperation:
-                if (gain < 1.0f) gain = 1.0f;
-                Compressor_Active = false;
-                break;
+            // Calculate the effective ratio that gradually changes from 1.0:1 to N:1
+            float effective_ratio = 1.0 + (ratio - 1.0) * blend_factor;
 
-            default:
-                break;
+            // Apply compression using the effective ratio
+            normalized_output = lowerKneeBound + (normalized_input - lowerKneeBound) / effective_ratio;
         }
 
-        sampleArr[0] = gain * sampleArr[0];
-        sampleArr[1] = gain * sampleArr[1];
-        inSampleF = gain * inSampleF;
+        if (normalized_input <= 0) target_gain = 1.0;
+        else target_gain = normalized_output / normalized_input;
+        if (target_gain > 1.0) target_gain = 1.0;
+        else if (target_gain < 0.0) target_gain = 0.0; 
+
+        // Smooth the gain with attack and release times
+        if (target_gain < current_gain) {
+            current_gain = current_gain - attack_coeff;
+            if (current_gain < 0.9) Compressor_Active = true;
+        } else { 
+            current_gain = current_gain + release_coeff;
+            if (current_gain > 0.9) Compressor_Active = false;
+        }
+        if (current_gain > 1.0) current_gain = 1.0;
+        if (current_gain < 0.0) current_gain = 0.0;
+
+        sampleArr[0] = current_gain * sampleArr[0];
+        sampleArr[1] = current_gain * sampleArr[1];
+        inSampleF = current_gain * inSampleF;
         return inSampleF;
     }
 };
