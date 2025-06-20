@@ -591,11 +591,11 @@ protected:
 
         // Smooth the gain with attack and release times
         if (target_gain < current_gain) {
-            current_gain = current_gain - attack_coeff;
+            current_gain = current_gain + (target_gain - current_gain) * attack_coeff;            
             if (current_gain < 0.9) Compressor_Active = true;
         } else { 
-            current_gain = current_gain + release_coeff;
-            if (current_gain > 0.9) Compressor_Active = false;
+            current_gain = current_gain + (target_gain - current_gain) * release_coeff;            
+            if (current_gain > 0.95) Compressor_Active = false;
         }
         if (current_gain > 1.0) current_gain = 1.0;
         if (current_gain < 0.0) current_gain = 0.0;
