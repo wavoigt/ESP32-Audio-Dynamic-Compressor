@@ -11,6 +11,11 @@
 // Board: ESP32 Wrover Kit (also for HiFi-ESP32 Board)
 // Partition Scheme: Minimal SPIFFS with OTA
 
+// For Stereo Compressor using modified versions of AudioEffects.h and AudioEffect.h
+// Copy the modified files into the Arduino library folder: Arduino\libraries\audio-tools\src\AudioTools\CoreAudio\AudioEffects\
+// If you are using the original Audio Tools library, you have to comment the lines with 'Compressor_Stereo' and 'Compressor_Active'.
+// in this case, the compressor is working in mono mode.
+
 // # Test Output to SPDIF:
 // If you encounter some quality issues you can increase the DEFAULT_BUFFER_SIZE (e.g. to 2048) 
 // and I2S_BUFFER_SIZE/I2S_BUFFER_COUNT
