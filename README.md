@@ -80,9 +80,9 @@ In CompHtmlServer.h müssen die Wifi Zugangsdaten eingetragen werden. <br>
 Alles weitere siehe Compressor4.ino
 
 Der Compressor in der Original Library (AudioEffect.h) tut was er soll, aber bei hohen Kompressionsraten neigt er leider zur 'Überkompression', d.h bei lauten Passagen wird das Signal zu stark zurückgeregelt. <br>
-Ich habe ihn vollständig ersetzt durch einen Soft Knee Limiter, der sehr zufriedenstellend arbeitet<br>
+Ich habe ihn vollständig ersetzt durch einen Limiter, der sehr zufriedenstellend arbeitet<br>
 Dabei habe ich aufgrund der begrenzten Prozessorleistung des ESP32 auf nichtlineare Berechnungen verzichtet, wie exp(), log() etc.<br>
-Deswegen wird der Threshold und die Ratio im Web Interface nicht in dB angezeigt, sondern in %.<br> 
+Deswegen wird der Threshold im Web Interface nicht in dB angezeigt, sondern in %.<br> 
 Ideen und Verbesserungsvorschläge sind willkommen :-)
 
 # English:
@@ -101,9 +101,9 @@ The Wifi access data must be entered in CompHtmlServer.h. <br>
 For everything else, see Compressor4.ino <br>
 
 The compressor in the original library (AudioEffect.h) does what it should, but at high compression rates it unfortunately tends to ‘overcompress’, i.e. the signal is reduced too much in loud passages. <br>
-I replaced it completely with a soft knee limiter, which works very satisfactorily<br>
+I replaced it completely with a limiter, which works very satisfactorily<br>
 Due to the limited processing power of the ESP32, I have dispensed with non-linear calculations such as exp(), log() etc.<br>
-This is why the threshold and the ratio are not displayed in dB in the web interface, but in %.<br>
+This is why the threshold is not displayed in dB in the web interface, but in %.<br>
 Ideas and suggestions for improvement are welcome :-)
 
 Translated with DeepL.com (free version)
