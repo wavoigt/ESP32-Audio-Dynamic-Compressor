@@ -13,7 +13,7 @@
 
 // For Stereo Compressor using modified versions of AudioEffects.h and AudioEffect.h
 // Copy the modified files into the Arduino library folder: Arduino\libraries\audio-tools\src\AudioTools\CoreAudio\AudioEffects\
-// If you are using the original Audio Tools library, you have to comment the lines with 'Compressor_Stereo' and 'Compressor_Active'.
+// If you are using the original Audio Tools library, you have to comment out the lines with 'Compressor_Stereo' and 'Compressor_Active'.
 // in this case, the compressor is working in mono mode.
 
 // # Test Output to SPDIF:
@@ -42,15 +42,14 @@ const uint8_t bits_per_sample = 16;
 AudioInfo info(sample_rate, channels, bits_per_sample);
 
 // Effects control input initial
-float ratiopct = 50;          // Ratio in %
-float ratio = ratiopct / 100; // Ratio
-uint8_t threshold = 100;      // Threshold in %
+float ratio = 50;             // Ratio
+uint8_t threshold = 50;       // Threshold in %
 uint16_t attackTime = 10;     // Attack-Zeit in ms
 uint16_t releaseTime = 100;   // Release-Zeit in ms
 uint16_t holdTime = 10;       // Hold-Zeit in ms
 
 // Effects
-Compressor compressor (sample_rate, attackTime, releaseTime, holdTime, threshold, ratio);
+Compressor compressor ((float)sample_rate, (float)attackTime, (float)releaseTime, (float)holdTime, (float)threshold, ratio);
 
 #ifdef TEST_GENERATOR
   // Test with Sine Generator
@@ -83,14 +82,13 @@ void updateValues(){
 // provide JSON as webservice
 void getJson(HttpServer * server, const char*requestPath, HttpRequestHandlerLine * hl) {
   auto parameters2Json = [](Stream & out) {
-    // DynamicJsonDocument doc(1024);
     JsonDocument doc;
-    doc["RatioControl"]["value"] = ratiopct;
-    doc["RatioControl"]["min"] = 10;
-    doc["RatioControl"]["max"] = 100;
-    doc["RatioControl"]["step"] = 10;
+    doc["RatioControl"]["value"] = ratio;
+    doc["RatioControl"]["min"] = 1;
+    doc["RatioControl"]["max"] = 101;
+    doc["RatioControl"]["step"] = 5;
     doc["Threshold"]["value"] = threshold;
-    doc["Threshold"]["min"] = 10;
+    doc["Threshold"]["min"] = 5;
     doc["Threshold"]["max"] = 100;
     doc["Threshold"]["step"] = 1;
     doc["AttackTime"]["value"] = attackTime;
@@ -99,8 +97,8 @@ void getJson(HttpServer * server, const char*requestPath, HttpRequestHandlerLine
     doc["AttackTime"]["step"] = 5;
     doc["ReleaseTime"]["value"] = releaseTime;
     doc["ReleaseTime"]["min"] = 10;
-    doc["ReleaseTime"]["max"] = 1000;
-    doc["ReleaseTime"]["step"] = 10;
+    doc["ReleaseTime"]["max"] = 1010;
+    doc["ReleaseTime"]["step"] = 20;
     serializeJson(doc, out);
   };
   // provide data as json using callback
@@ -114,23 +112,22 @@ void postJson(HttpServer *server, const char*requestPath, HttpRequestHandlerLine
   // DynamicJsonDocument doc(1024);
   JsonDocument doc;
   deserializeJson(doc, server->client());
-  ratiopct = doc["RatioControl"];
-  ratio = ratiopct / 100;
+  ratio = doc["RatioControl"];
   threshold = doc["Threshold"];
   attackTime = doc["AttackTime"];
   releaseTime = doc["ReleaseTime"];
   // update values in controls
   updateValues();
   preferences.begin("Compressor", false);
-  preferences.putFloat("ratiopct", ratiopct);
+  preferences.putFloat("ratio", ratio);
   preferences.putUChar("threshold", threshold);
   preferences.putUShort("attackTime", attackTime);
   preferences.putUShort("releaseTime", releaseTime);
   preferences.end();
   server->reply("text/json", "{}", 200);
-  char msg[120];
-  snprintf(msg, 120, "==> updated values %f %d %d %d", ratio, threshold, attackTime, releaseTime);
-  Serial.println(msg);
+  //char msg[120];
+  //snprintf(msg, 120, "> updated values %f %d %d %d", ratio, threshold, attackTime, releaseTime);
+  //Serial.println(msg);
   //Serial.print(gain_reduce); Serial.print("  "); Serial.println(gain_); 
 }
 
@@ -174,11 +171,10 @@ void setup(void) {
   
   // Get Preferences
   preferences.begin("Compressor", false);
-  ratiopct = preferences.getFloat("ratiopct", ratiopct);
+  ratio = preferences.getFloat("ratio", ratio);
   threshold = preferences.getUChar("threshold", threshold);
   attackTime = preferences.getUShort("attackTime", attackTime);
   releaseTime = preferences.getUShort("releaseTime", releaseTime);
-  ratio = ratiopct / 100;
   preferences.end();
 
   Serial.begin(115200);
@@ -211,7 +207,7 @@ void setup(void) {
   config_in.pin_data = 19;  // (MISO) // 22
   config_in.pin_bck = 18;   // (CLK)  // 14
   config_in.pin_ws = 14;    // (RST)  // 15
-  config_in.buffer_size = 384; // minimize lag 256
+  config_in.buffer_size = 512; // minimize lag 256
   config_in.buffer_count = 2;
   in.begin(config_in);
   Serial.println("I2S started");
@@ -222,7 +218,7 @@ void setup(void) {
   auto config_out = out.defaultConfig();
   config_out.pin_data = 23; // (MOSI)
   config_out.port_no = 0;
-  config_out.buffer_size = 384;
+  config_out.buffer_size = 512; // 384
   config_out.buffer_count = 8;
   out.begin(config_out);
   Serial.println("SPDIF started");
