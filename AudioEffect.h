@@ -1,3 +1,13 @@
+/*
+ * @brief Abstract Base class for Sound Effects
+ * @ingroup effects
+ * @author Phil Schatzmann
+ * @copyright GPLv3
+ */
+/*
+ * modified by W. Voigt for Stereo and Limiter
+ */
+
 #pragma once
 #include "AudioParameters.h"
 #include "PitchShift.h"
@@ -10,34 +20,10 @@ namespace audio_tools {
 
 // we use int16_t for our effects
 typedef int16_t effect_t;
-
-/*
- * modified by W. Voigt for Stereo and Soft Knee Limiter
- */
 bool Compressor_Stereo = true;
 bool Compressor_Active = false;
-effect_t sampleArr[2];
+float sampleArr[2];
 
-// Gain 0.5 * cos(1-x); x = 0 - 1 (S-Form) for Soft Knee /Vo
-float cosx[] = { 
-0,0.00025,0.00099,0.00222,0.00394,0.00616,0.00886,0.01204,0.01571,0.01985,0.02447,
-0.02956,0.03511,0.04112,0.04759,0.05450,0.06185,0.06963,0.07784,0.08646,0.09549,
-0.10492,0.11474,0.12494,0.13552,0.14645,0.15773,0.16934,0.18129,0.19355,0.20611,
-0.21896,0.23209,0.24548,0.25912,0.27300,0.28711,0.30143,0.31594,0.33063,0.34549,
-0.36050,0.37566,0.39093,0.40631,0.42178,0.43733,0.45295,0.46860,0.48429,0.50000,
-0.51571,0.53140,0.54705,0.56267,0.57822,0.59369,0.60907,0.62434,0.63950,0.65451,
-0.66937,0.68406,0.69857,0.71289,0.72700,0.74088,0.75452,0.76791,0.78104,0.79389,
-0.80645,0.81871,0.83066,0.84227,0.85355,0.86448,0.87506,0.88526,0.89508,0.90451,
-0.91354,0.92216,0.93037,0.93815,0.94550,0.95241,0.95888,0.96489,0.97044,0.97553,
-0.98015,0.98429,0.98796,0.99114,0.99384,0.99606,0.99778,0.99901,0.99975,1.00000 };
-
-
-/**
- * @brief Abstract Base class for Sound Effects
- * @ingroup effects
- * @author Phil Schatzmann
- * @copyright GPLv3
- */
 
 class AudioEffect {
 public:
@@ -481,7 +467,7 @@ protected:
  * @copyright GPLv3
 */
 /*
- * modified by W. Voigt for Stereo and Soft Knee Limiter
+ * modified by W. Voigt for Stereo and Limiter
 */
 
 class Compressor : public AudioEffect { 
@@ -491,17 +477,15 @@ public:
 
     /// Default Constructor
     Compressor(float sampleRate = 44100, float attackMs=5, float releaseMs=200, float holdMs=10, 
-               float thresholdPercent=50, float compressionRatio=0.5){
+               float thresholdPercent=50, float compressionRatio=50){
         
-        // Attack -> 10 ms -> 1000
-        // Release -> 20 ms -> 2000
+        // Attack -> 5 ms -> 100
+        // Release -> 10 ms -> 1000
         
         sample_rate = sampleRate; 
-	    target_gain = 1.0f;
 	    current_gain = 1.0f;
-        threshold = 0.01f * thresholdPercent;
-        ratio = 1 / compressionRatio;
-        kneeWidth = 0.2;
+        threshold = thresholdPercent / 100.0;
+        ratio = compressionRatio;
         setAttack(attackMs);
         setRelease(releaseMs);    
     }
@@ -509,7 +493,7 @@ public:
     /// Defines the attack duration in ms
     void setAttack(float attack_ms){
         float attack_samples = sample_rate * (attack_ms / 1000.0);
-        attack_coeff = 1.0 / attack_samples; 
+        attack_coeff = 1.0 / attack_samples;
         if (attack_coeff > 1.0) attack_coeff = 1.0;
         else if (attack_coeff < 0.0) attack_coeff = 0.0;
     }
@@ -522,16 +506,15 @@ public:
         else if (release_coeff < 0.0) release_coeff = 0.0;
     }
 
-    /// Defines the threshod in %
-    void setThresholdPercent(uint8_t thresholdPercent){
-        threshold = 0.01f * thresholdPercent;
+    /// Defines the threshold in %
+    void setThresholdPercent(float thresholdPercent){
+        threshold = thresholdPercent / 100.0;
     }
 
-    /// Defines the compression ratio from 0.1 to 1
+    /// Defines the compression ratio from 1 to 100
     void setCompressionRatio(float compressionRatio){
-        if (compressionRatio > 1) compressionRatio = 1.0;
-        if (compressionRatio < 0.1) compressionRatio = 0.1;
-        ratio = 1 / compressionRatio;
+        if (compressionRatio < 1) compressionRatio = 1;
+        ratio = compressionRatio;
     }
 
     /// Processes the sample
@@ -545,45 +528,22 @@ public:
 
 protected:
 
-    float sample_rate, threshold, ratio, target_gain, current_gain;
-    float attack_coeff, release_coeff, kneeWidth;
+    float sample_rate, threshold, ratio, current_gain;
+    float attack_coeff, release_coeff;
 
-    // modifiziert Stereo ------------------------------------------------------
     float compress(float inSampleF){
         
-        float normalized_input = abs(inSampleF / 32767);
+        float normalized_input = fabs(inSampleF / 32767.0);
         float normalized_output;
 
-        // Calculate knee bounds in linear amplitude; Ensure bounds don't go below zero
-        float lowerKneeBound = threshold - (kneeWidth / 2.0);
-        if (lowerKneeBound < 0.0) lowerKneeBound = 0.0;
-        
-        float upperKneeBound = threshold + (kneeWidth / 2.0);
-
-        if (normalized_input <= lowerKneeBound) {
+        if (normalized_input <= threshold) {
             // Below knee: no compression, output equals input
             normalized_output = normalized_input;
-        } else if (normalized_input >= upperKneeBound) {
-            // Above knee: full compression at the specified ratio
-            // normalized_output = Point where compression starts + (excess / ratio)
-            normalized_output = upperKneeBound + (normalized_input - upperKneeBound) / ratio;
         } else {
-            // Within knee: Soft-knee compression
-            // Normalized position within the knee (0.0 to 1.0)
-            float normalized_position = (normalized_input - lowerKneeBound) / kneeWidth;
-            if (normalized_position > 1.0) normalized_position = 1.0;
-            else if (normalized_position < 0.0) normalized_position = 0.0; 
-
-            // Apply cosine blend for smooth transition
-            float blend_factor = cosx[(int)(normalized_position * 100)]; // 0.0 to 1.0
-
-            // Calculate the effective ratio that gradually changes from 1.0:1 to N:1
-            float effective_ratio = 1.0 + (ratio - 1.0) * blend_factor;
-
-            // Apply compression using the effective ratio
-            normalized_output = lowerKneeBound + (normalized_input - lowerKneeBound) / effective_ratio;
+            // Above knee: compression at the specified ratio
+            normalized_output = threshold + (normalized_input - threshold) / ratio;
         }
-
+        float target_gain;
         if (normalized_input <= 0) target_gain = 1.0;
         else target_gain = normalized_output / normalized_input;
         if (target_gain > 1.0) target_gain = 1.0;
