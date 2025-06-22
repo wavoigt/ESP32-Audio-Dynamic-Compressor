@@ -59,11 +59,11 @@ static const char PROGMEM INDEX_HTML[] = R"rawliteral(
         <h1>Compressor</h1>
         <form id="effect-form" method='post' >
             <div>
-                Ratio 10-100%<br>
+                Ratio 1-100<br>
                 <input type='range' class="slider" id='RatioControl' name='RatioControl' onchange="$('#effect-form').submit();" min='0' max='0' step='0' value='0' >
             </div>
             <div>
-                <br>Threshold 10-100%<br>
+                <br>Threshold 5-100%<br>
                 <input type='range' class="slider" id='Threshold' name='Threshold' onchange="$('#effect-form').submit();" min='0' max='0' step='0' value='0'>
             </div>
             <div>
@@ -83,5 +83,3 @@ static const char PROGMEM INDEX_HTML[] = R"rawliteral(
 void getHtml(HttpServer *server, const char*requestPath, HttpRequestHandlerLine *hl) { 
     server->reply("text/html", (const char *)INDEX_HTML, 200);
 };
-
-
