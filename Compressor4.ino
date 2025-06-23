@@ -55,7 +55,8 @@ Compressor compressor ((float)sample_rate, (float)attackTime, (float)releaseTime
   // Test with Sine Generator
   SineWaveGenerator<int16_t> sineWave(32000);     // subclass of SoundGenerator with max amplitude of 32000
   GeneratedSoundStream<int16_t> sound(sineWave);  // Stream generated from sine wave
-  AudioEffectStream effects(sound);   // input
+  FadeStream fade(sound); 
+  AudioEffectStream effects(fade);  // input
 #else
   // Streams
   I2SStream in;     // Toslink in
@@ -67,13 +68,13 @@ Compressor compressor ((float)sample_rate, (float)attackTime, (float)releaseTime
 #else
   I2SStream out;  // DAC
 #endif
-StreamCopy copier(out, effects); // copies effects into i2s
 
+StreamCopy copier(out, effects); // copies effects into i2s
 
 // Update values in effects
 void updateValues(){
   compressor.setCompressionRatio(ratio);
-  compressor.setThresholdPercent((float)threshold);
+  compressor.setThreshold((float)threshold);
   compressor.setAttack((float)attackTime);
   compressor.setRelease((float)releaseTime);
  }
@@ -109,7 +110,6 @@ void getJson(HttpServer * server, const char*requestPath, HttpRequestHandlerLine
 // Process Posted Json
 void postJson(HttpServer *server, const char*requestPath, HttpRequestHandlerLine *hl) {
   // post json to server
-  // DynamicJsonDocument doc(1024);
   JsonDocument doc;
   deserializeJson(doc, server->client());
   ratio = doc["RatioControl"];
@@ -195,6 +195,7 @@ void setup(void) {
 #ifdef TEST_GENERATOR
   // Generator
   sineWave.begin(info, 500);
+  fade.begin(info);
   Serial.println("Generator started...");
 
 #else
@@ -244,6 +245,10 @@ void setup(void) {
 }
 
 // Arduino loop - copy data
+
+long cnt = 0;
+bool on = true;
+
 void loop() {
   copier.copy();
   server.copy();
