@@ -245,10 +245,6 @@ void setup(void) {
 }
 
 // Arduino loop - copy data
-
-long cnt = 0;
-bool on = true;
-
 void loop() {
   copier.copy();
   server.copy();
