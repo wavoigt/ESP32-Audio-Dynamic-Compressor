@@ -11,7 +11,7 @@ Diese Anleitung ist nicht für Anfänger gedacht.<br> Grundlegende Kenntnisse in
 ![Compr_von_oben_kl](https://github.com/user-attachments/assets/a5108c59-f7f9-48c5-bd7a-d229d6821879)
 
 Web Interface<br>
-![WebInterface](https://github.com/user-attachments/assets/3b8c5aef-7430-4c4a-8d2b-5738e23c4913) 
+![WebInterface](https://github.com/user-attachments/assets/570b3652-e841-4fad-b4c8-41f3cf9e4280)
 
 <b>Hardware:</b>
 
@@ -82,7 +82,6 @@ Alles weitere siehe Compressor4.ino
 Der Compressor in der Original Library (AudioEffect.h) tut was er soll, aber bei hohen Kompressionsraten neigt er leider zur 'Überkompression', d.h bei lauten Passagen wird das Signal zu stark zurückgeregelt. <br>
 Ich habe ihn vollständig ersetzt durch einen Limiter, der sehr zufriedenstellend arbeitet<br>
 Dabei habe ich aufgrund der begrenzten Prozessorleistung des ESP32 auf nichtlineare Berechnungen verzichtet, wie exp(), log() etc.<br>
-Deswegen wird der Threshold im Web Interface nicht in dB angezeigt, sondern in %.<br> 
 Ideen und Verbesserungsvorschläge sind willkommen :-)
 
 # English:
@@ -103,7 +102,6 @@ For everything else, see Compressor4.ino <br>
 The compressor in the original library (AudioEffect.h) does what it should, but at high compression rates it unfortunately tends to ‘overcompress’, i.e. the signal is reduced too much in loud passages. <br>
 I replaced it completely with a limiter, which works very satisfactorily<br>
 Due to the limited processing power of the ESP32, I have dispensed with non-linear calculations such as exp(), log() etc.<br>
-This is why the threshold is not displayed in dB in the web interface, but in %.<br>
 Ideas and suggestions for improvement are welcome :-)
 
 Translated with DeepL.com (free version)
