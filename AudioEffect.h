@@ -20,10 +20,6 @@ namespace audio_tools {
 
 // we use int16_t for our effects
 typedef int16_t effect_t;
-bool Compressor_Stereo = true;
-bool Compressor_Active = false;
-float sampleArr[2];
-
 
 class AudioEffect {
 public:
@@ -470,6 +466,10 @@ protected:
  * modified by W. Voigt for Stereo and Limiter
 */
 
+bool Compressor_Stereo = true;
+bool Compressor_Active = false;
+float sampleArr[2];
+
 class Compressor : public AudioEffect { 
 public:    
     /// Copy Constructor
@@ -484,8 +484,8 @@ public:
         
         sample_rate = sampleRate; 
 	    current_gain = 1.0f;
-        threshold = thresholdPercent / 100.0;
         ratio = compressionRatio;
+        setThreshold(thresholdPercent);
         setAttack(attackMs);
         setRelease(releaseMs);    
     }
@@ -493,7 +493,7 @@ public:
     /// Defines the attack duration in ms
     void setAttack(float attack_ms){
         float attack_samples = sample_rate * (attack_ms / 1000.0);
-        attack_coeff = 1.0 / attack_samples;
+        attack_coeff = 1 / attack_samples;
         if (attack_coeff > 1.0) attack_coeff = 1.0;
         else if (attack_coeff < 0.0) attack_coeff = 0.0;
     }
@@ -501,14 +501,18 @@ public:
     /// Defines the release duration in ms
     void setRelease(float release_ms){
         float release_samples = sample_rate * (release_ms / 1000.0);    
-        release_coeff = 1.0 / release_samples;
+        release_coeff = 1 / release_samples;
         if (release_coeff > 1.0) release_coeff = 1.0;
         else if (release_coeff < 0.0) release_coeff = 0.0;
     }
 
-    /// Defines the threshold in %
-    void setThresholdPercent(float thresholdPercent){
-        threshold = thresholdPercent / 100.0;
+    /// Defines the threshold in dB
+    void setThreshold(float thresholdPercent){
+        if (thresholdPercent > 99) thresholdPercent = 99;
+        else if (thresholdPercent < 1) thresholdPercent = 1;
+        threshold = -0.5 * log10(1 - thresholdPercent / 100);
+        if (threshold > 1) threshold = 1;
+        else if (threshold < 0) threshold = 0;
     }
 
     /// Defines the compression ratio from 1 to 100
