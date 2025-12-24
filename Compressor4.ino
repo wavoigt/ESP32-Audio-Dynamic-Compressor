@@ -7,7 +7,7 @@
  * @copyright Copyright (c) 2022
  */ 
 
-// Audio Compressor mit Web Interface Siehe CompHtmlServer.h
+// Audio Compressor mit Web Interface
 // Board: ESP32 Wrover Kit (also for HiFi-ESP32 Board)
 // Partition Scheme: Minimal SPIFFS with OTA
 
@@ -20,20 +20,28 @@
 // If you encounter some quality issues you can increase the DEFAULT_BUFFER_SIZE (e.g. to 2048) 
 // and I2S_BUFFER_SIZE/I2S_BUFFER_COUNT
 
-#define USE_AUDIO_LOGGING true // false = less memory
-#define RGB_LED 12 // pull down, must be low at boot
+// LED_GRN: Reduction -1dB to -12dB
+// LED_RED: Reduction -6dB to -max
+
+#define USE_AUDIO_LOGGING false // false = less memory
+#define LED_GRN 12 // pull down, must be low at boot
+#define LED_RED 21 // pull down, must be low at boot
 // #define TEST_GENERATOR
 #define TOS_LINK
 
-#include <ArduinoJson.h>  // https://arduinojson.org/
 #include "HttpServer.h"   // https://github.com/pschatzmann/TinyHttp
 #include "AudioTools.h"   // https://github.com/pschatzmann/arduino-audio-tools.git
-#include "AudioTools/AudioLibs/SPDIFOutput.h"
-// Arduino\libraries\audio-tools\src\AudioTools\CoreAudio\AudioEffects
-#include "CompHtmlServer.h"
-#include <ArduinoOTA.h>
+#include "AudioTools/AudioLibs/SPDIFOutput.h" // Arduino\libraries\audio-tools\src\AudioTools\CoreAudio\AudioEffects
 #include <Preferences.h>
 Preferences preferences;
+
+// Server
+WiFiServer wifi;
+HttpServer server(wifi);
+HttpParameters parameters;
+const char *ssid = "YOUR_SSID";
+const char *password = "YOUR_PASS";
+TaskHandle_t TaskCore0; // Handle für den Task
 
 // Audio Format
 const uint32_t sample_rate = 44100;
@@ -42,21 +50,19 @@ const uint8_t bits_per_sample = 16;
 AudioInfo info(sample_rate, channels, bits_per_sample);
 
 // Effects control input initial
-float ratio = 50;             // Ratio
-uint8_t threshold = 50;       // Threshold in %
+uint8_t ratio = 100;             // Ratio
+uint8_t threshold = 30;       // Threshold in %
 uint16_t attackTime = 10;     // Attack-Zeit in ms
-uint16_t releaseTime = 100;   // Release-Zeit in ms
-uint16_t holdTime = 10;       // Hold-Zeit in ms
+uint16_t releaseTime = 500;   // Release-Zeit in ms
 
 // Effects
-Compressor compressor ((float)sample_rate, (float)attackTime, (float)releaseTime, (float)holdTime, (float)threshold, ratio);
+Compressor compressor ((float)sample_rate, (float)attackTime, (float)releaseTime, 0, (float)threshold, (float)ratio);
 
 #ifdef TEST_GENERATOR
   // Test with Sine Generator
   SineWaveGenerator<int16_t> sineWave(32000);     // subclass of SoundGenerator with max amplitude of 32000
   GeneratedSoundStream<int16_t> sound(sineWave);  // Stream generated from sine wave
-  FadeStream fade(sound); 
-  AudioEffectStream effects(fade);  // input
+  AudioEffectStream effects(sound);  // input
 #else
   // Streams
   I2SStream in;     // Toslink in
@@ -71,107 +77,109 @@ Compressor compressor ((float)sample_rate, (float)attackTime, (float)releaseTime
 
 StreamCopy copier(out, effects); // copies effects into i2s
 
+static const char PROGMEM htmlForm[] = R"rawliteral(
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Compressor</title>
+<style>
+body {background-color: #cccccc; font-family: Arial; text-align: left; margin: 0px auto; padding-top: 20px; padding-left: 30px;}
+.slider {width: 95%;}
+</style>
+</head>
+<body>
+<h2>Compressor</h2>
+<form method='post'>
+<div>
+Ratio 1 - 200 &nbsp;&nbsp;<b>%ratio%</b><br>
+<input type='range' class='slider' name='ratio' onchange='this.form.submit()' min='1' max='201' step='10' value='%ratio%'>
+</div><div>
+<br>Threshold 5 - 100 &nbsp;&nbsp;<b>%thresh%</b><br>
+<input type='range' class='slider' name='thresh' onchange='this.form.submit()' min='5' max='100' step='1' value='%thresh%'>
+</div><div>
+<br>Attack 5 - 100ms &nbsp;&nbsp;<b>%attack%</b><br>
+<input type='range' class='slider' name='attack' onchange='this.form.submit()' min='5' max='100' step='5' value='%attack%'>
+</div><div>
+<br>Release 10 - 1000ms &nbsp;&nbsp;<b>%release%</b><br>
+<input type='range' class='slider' name='release' onchange='this.form.submit()' min='10' max='1010' step='20' value='%release%'>
+</div>
+</form>
+</body>
+</html>
+)rawliteral";
+
+
 // Update values in effects
 void updateValues(){
-  compressor.setCompressionRatio(ratio);
+  compressor.setCompressionRatio((float)ratio);
   compressor.setThreshold((float)threshold);
   compressor.setAttack((float)attackTime);
   compressor.setRelease((float)releaseTime);
  }
 
-
-// provide JSON as webservice
-void getJson(HttpServer * server, const char*requestPath, HttpRequestHandlerLine * hl) {
-  auto parameters2Json = [](Stream & out) {
-    JsonDocument doc;
-    doc["RatioControl"]["value"] = ratio;
-    doc["RatioControl"]["min"] = 1;
-    doc["RatioControl"]["max"] = 101;
-    doc["RatioControl"]["step"] = 5;
-    doc["Threshold"]["value"] = threshold;
-    doc["Threshold"]["min"] = 5;
-    doc["Threshold"]["max"] = 100;
-    doc["Threshold"]["step"] = 1;
-    doc["AttackTime"]["value"] = attackTime;
-    doc["AttackTime"]["min"] = 5;
-    doc["AttackTime"]["max"] = 100;
-    doc["AttackTime"]["step"] = 5;
-    doc["ReleaseTime"]["value"] = releaseTime;
-    doc["ReleaseTime"]["min"] = 10;
-    doc["ReleaseTime"]["max"] = 1010;
-    doc["ReleaseTime"]["step"] = 20;
-    serializeJson(doc, out);
-  };
-  // provide data as json using callback
-  server->reply("text/json", parameters2Json, 200);
+void printValues() {
+    char msg[120];
+    snprintf(msg, 120, "==> updated values %d %d %d %d",ratio, threshold, attackTime, releaseTime);
+    Serial.println(msg);        
 }
 
+void getHtml(HttpServer *server, const char*requestPath, HttpRequestHandlerLine *hl) { 
+    // provide html and replace variables with actual values
+    tinyhttp::Str html(2000);
+    html.set(htmlForm);
+    html.replace("%ratio%",ratio); html.replace("%ratio%",ratio);
+    html.replace("%thresh%",threshold); html.replace("%thresh%",threshold);
+    html.replace("%attack%",attackTime); html.replace("%attack%",attackTime);
+    html.replace("%release%",releaseTime); html.replace("%release%",releaseTime);
+    server->reply("text/html", html.c_str(), 200);
+};
 
-// Process Posted Json
-void postJson(HttpServer *server, const char*requestPath, HttpRequestHandlerLine *hl) {
-  // post json to server
-  JsonDocument doc;
-  deserializeJson(doc, server->client());
-  ratio = doc["RatioControl"];
-  threshold = doc["Threshold"];
-  attackTime = doc["AttackTime"];
-  releaseTime = doc["ReleaseTime"];
-  // update values in controls
-  updateValues();
-  preferences.begin("Compressor", false);
-  preferences.putFloat("ratio", ratio);
-  preferences.putUChar("threshold", threshold);
-  preferences.putUShort("attackTime", attackTime);
-  preferences.putUShort("releaseTime", releaseTime);
-  preferences.end();
-  server->reply("text/json", "{}", 200);
-  //char msg[120];
-  //snprintf(msg, 120, "> updated values %f %d %d %d", ratio, threshold, attackTime, releaseTime);
-  //Serial.println(msg);
-  //Serial.print(gain_reduce); Serial.print("  "); Serial.println(gain_); 
-}
+void postData(HttpServer *server, const char*requestPath, HttpRequestHandlerLine *hl) { 
+    // parse the parameters
+    parameters.parse(server->client()); // timeout verkleinert in HttpParameters.h
+    // update parameters
+    ratio = parameters.getInt("ratio");
+    threshold = parameters.getInt("thresh");
+    attackTime = parameters.getInt("attack");
+    releaseTime = parameters.getInt("release");
+    // return updated html       
+    getHtml(server, requestPath, hl); 
+    updateValues();
+    preferences.begin("Compressor", false);
+    preferences.putUChar("ratio", ratio);
+    preferences.putUChar("threshold", threshold);
+    preferences.putUShort("attackTime", attackTime);
+    preferences.putUShort("releaseTime", releaseTime);
+    preferences.end();
+    // printValues();
+};
 
 
-void ota_Setup()
-{
-  ArduinoOTA.setHostname("Compressor"); // Hostname defaults to esp3232-[MAC]
-  ArduinoOTA.setPassword("madda"); // No authentication by default
-  
-  ArduinoOTA
-    .onStart([]() {
-      String type;
-      if (ArduinoOTA.getCommand() == U_FLASH) type = "sketch";
-      else type = "filesystem"; // U_SPIFFS
-      // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
-      Serial.println("Start updating " + type);
-    })
-    .onEnd([]() {
-      Serial.println("\nEnd");
-    })
-    .onProgress([](unsigned int progress, unsigned int total) {
-      Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
-    })
-    .onError([](ota_error_t error) {
-      Serial.printf("Error[%u]: ", error);
-      if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
-      else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
-      else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
-      else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
-      else if (error == OTA_END_ERROR) Serial.println("End Failed");
-    });
-  ArduinoOTA.begin();
-}
+// Function to run on Core 0
+void httpTaskCode( void * parameter ){
+  Serial.print("HTTP-Task running on Core: ");
+  Serial.println(xPortGetCoreID());
+  for(;;){
+    server.copy(); 
+    delay(5); // time for processing WiFi
+  } 
+};
+
+
 
 // Arduino Setup
 void setup(void) {
   
-  pinMode(RGB_LED, OUTPUT);
-  digitalWrite(RGB_LED, LOW);
+  pinMode(LED_GRN, OUTPUT);
+  pinMode(LED_RED, OUTPUT);
+  digitalWrite(LED_GRN, LOW);
+  digitalWrite(LED_RED, LOW);
   Compressor_Stereo  = true; // comment out if using original AudioEffects.h
   
   // Get Preferences
   preferences.begin("Compressor", false);
-  ratio = preferences.getFloat("ratio", ratio);
+  ratio = preferences.getUChar("ratio", ratio);
   threshold = preferences.getUChar("threshold", threshold);
   attackTime = preferences.getUShort("attackTime", attackTime);
   releaseTime = preferences.getUShort("releaseTime", releaseTime);
@@ -184,18 +192,26 @@ void setup(void) {
   #endif
 
   // Setup Server
-  server.on("/", T_GET, getHtml);
-  server.on("/service", T_GET, getJson);
-  server.on("/service", T_POST, postJson);
+  HttpLogger.begin(Serial, Error);
+  server.on("/",T_GET, getHtml);
+  server.on("/",T_POST, postData);
   server.begin(80, ssid, password);
-  server.setNoConnectDelay(0);
+  server.setTimeout(200); // default = 1000
 
-  ota_Setup();
+  // Den Task im Setup erstellen und an Core 0 "pinnen"
+  xTaskCreatePinnedToCore(
+      httpTaskCode,    /* Name der Funktion (Task) */
+      "HttpCore0",     /* Task-Name */
+      8192,            /* Stack-Größe (RAM) – 8K ist ein sicherer Wert */
+      NULL,            /* Parameter */
+      2,               /* Priorität (etwas höher als Standard-1) */
+      &TaskCore0,      /* Task Handle */
+      0);              /* <-- Core ID 0 */
+ 
 
 #ifdef TEST_GENERATOR
   // Generator
   sineWave.begin(info, 500);
-  fade.begin(info);
   Serial.println("Generator started...");
 
 #else
@@ -247,8 +263,7 @@ void setup(void) {
 // Arduino loop - copy data
 void loop() {
   copier.copy();
-  server.copy();
-  // comment our if using original AudioEffects.h
-  if (Compressor_Active) digitalWrite(RGB_LED, HIGH); else digitalWrite(RGB_LED, LOW); 
-  ArduinoOTA.handle();
+  // comment out if using original AudioEffects.h
+  if (Compressor_Active1) digitalWrite(LED_GRN, HIGH); else digitalWrite(LED_GRN, LOW); 
+  if (Compressor_Active2) digitalWrite(LED_RED, HIGH); else digitalWrite(LED_RED, LOW); 
 }
