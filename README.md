@@ -59,6 +59,22 @@ Optionaler ADC: PCM1802 Stereo-A/D-Wandler, erhältlich bei Amazon
     <td>5V</td>
     <td>GND</td>
   </tr>
+  <tr>
+    <td>LED GREEN</td>
+    <td>GPIO12</td>
+    <td></td>
+    <td></td>
+    <td>5V</td>
+    <td>GND</td>
+  </tr>
+  <tr>
+    <td>LED RED</td>
+    <td>GPIO21</td>
+    <td></td>
+    <td></td>
+    <td>5V</td>
+    <td>GND</td>
+  </tr>
 </table>
 
 
@@ -66,8 +82,8 @@ Optionaler ADC: PCM1802 Stereo-A/D-Wandler, erhältlich bei Amazon
 
 Die Software ist für die Arduino IDE gedacht.<br>
 - Compressor4.ino<br>
-- CompHtmlServer.h im Compressor4 Ordner<br>
 - Audio Library https://github.com/pschatzmann/arduino-audio-tools (thx to pschatzmann for his great audio processing library)<br>
+- TinyHttp Library https://github.com/pschatzmann/TinyHttp<br>
 
 <b>Anleitung:</b>
 
