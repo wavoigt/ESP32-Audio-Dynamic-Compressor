@@ -467,7 +467,8 @@ protected:
 */
 
 bool Compressor_Stereo = true;
-bool Compressor_Active = false;
+bool Compressor_Active1 = false;
+bool Compressor_Active2 = false;
 float sampleArr[2];
 
 class Compressor : public AudioEffect { 
@@ -493,7 +494,7 @@ public:
     /// Defines the attack duration in ms
     void setAttack(float attack_ms){
         float attack_samples = sample_rate * (attack_ms / 1000.0);
-        attack_coeff = 1 / attack_samples;
+        attack_coeff = 1.0 / attack_samples;
         if (attack_coeff > 1.0) attack_coeff = 1.0;
         else if (attack_coeff < 0.0) attack_coeff = 0.0;
     }
@@ -501,7 +502,7 @@ public:
     /// Defines the release duration in ms
     void setRelease(float release_ms){
         float release_samples = sample_rate * (release_ms / 1000.0);    
-        release_coeff = 1 / release_samples;
+        release_coeff = 1.0 / release_samples;
         if (release_coeff > 1.0) release_coeff = 1.0;
         else if (release_coeff < 0.0) release_coeff = 0.0;
     }
@@ -556,10 +557,14 @@ protected:
         // Smooth the gain with attack and release times
         if (target_gain < current_gain) {
             current_gain = current_gain + (target_gain - current_gain) * attack_coeff;            
-            if (current_gain < 0.9) Compressor_Active = true;
+            if ((current_gain < 0.9) && (current_gain > 0.25)) Compressor_Active1 = true; // green
+            else Compressor_Active1 = false;
+            if  (current_gain < 0.5) Compressor_Active2 = true; // red 
+            else Compressor_Active2 = false;
         } else { 
             current_gain = current_gain + (target_gain - current_gain) * release_coeff;            
-            if (current_gain > 0.95) Compressor_Active = false;
+            if (current_gain > 0.5) Compressor_Active2 = false;
+            if (current_gain > 0.9) Compressor_Active1 = false;
         }
         if (current_gain > 1.0) current_gain = 1.0;
         if (current_gain < 0.0) current_gain = 0.0;
