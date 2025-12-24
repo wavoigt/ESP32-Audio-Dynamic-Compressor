@@ -1,9 +1,9 @@
 # ESP32 Audio Dynamic Compressor / Limiter
 <b>mit digitalem Ein- und Ausgang und Analogausgang, optional mit analogem Eingang,<br>
-Web Interface zur Steuerung und Programmierung über USB.
+Web Interface über WiFi zur Steuerung, Programmierung über USB.
 
 with digital input and output and analogue output, optionally with analogue input, <br>
-Web interface for control and programming via USB. English -> scroll down</b>
+Web interface via WiFi for control, and programming via USB. English -> scroll down</b>
 
 Ich verwende diese Schaltung zwischen TV und Soundsystem, um die zum Teil sehr hohe Dynamik von Spielfilmen einzuschränken.<br>
 Diese Anleitung ist nicht für Anfänger gedacht.<br> Grundlegende Kenntnisse in Programmierung mit der Arduino IDE setze ich voraus.
