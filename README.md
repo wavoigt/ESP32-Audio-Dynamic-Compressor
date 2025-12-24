@@ -1,9 +1,9 @@
 # ESP32 Audio Dynamic Compressor / Limiter
 <b>mit digitalem Ein- und Ausgang und Analogausgang, optional mit analogem Eingang,<br>
-Web Interface zur Steuerung und OTA Programmierung.
+Web Interface zur Steuerung und Programmierung über USB.
 
 with digital input and output and analogue output, optionally with analogue input, <br>
-Web interface for control and OTA programming. English -> scroll down</b>
+Web interface for control and programming via USB. English -> scroll down</b>
 
 Ich verwende diese Schaltung zwischen TV und Soundsystem, um die zum Teil sehr hohe Dynamik von Spielfilmen einzuschränken.<br>
 Diese Anleitung ist nicht für Anfänger gedacht.<br> Grundlegende Kenntnisse in Programmierung mit der Arduino IDE setze ich voraus.
@@ -92,7 +92,6 @@ Für Stereo Betrieb musste ich die files AudioEffects.h and AudioEffect.h modifi
 Kopiere die files AudioEffects.h and AudioEffect.h in den Arduino library folder:<br>Arduino\libraries\audio-tools\src\AudioTools\CoreAudio\AudioEffects<br>
 Falls du die Original files verwenden möchtest, musst du die Zeilen mit 'Compressor_Stereo' und 'Compressor_Active' in der Compressor4.ino auskommentieren. 
 Der Compressor arbeitet dann im mono Betrieb<br>
-In CompHtmlServer.h müssen die Wifi Zugangsdaten eingetragen werden. <br>
 Alles weitere siehe Compressor4.ino
 
 Der Compressor in der Original Library (AudioEffect.h) tut was er soll, aber bei hohen Kompressionsraten neigt er leider zur 'Überkompression', d.h bei lauten Passagen wird das Signal zu stark zurückgeregelt. <br>
@@ -112,7 +111,6 @@ Copy the files AudioEffects.h and AudioEffect.h into the Arduino library folder:
 Arduino\libraries\audio-tools\src\AudioTools\CoreAudio\AudioEffects <br>
 If you want to use the original files, you must comment out the lines with ‘Compressor_Stereo’ and ‘Compressor_Active’ in Compressor4.ino. <br>
 The compressor then works in mono mode. <br>
-The Wifi access data must be entered in CompHtmlServer.h. <br>
 For everything else, see Compressor4.ino <br>
 
 The compressor in the original library (AudioEffect.h) does what it should, but at high compression rates it unfortunately tends to ‘overcompress’, i.e. the signal is reduced too much in loud passages. <br>
