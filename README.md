@@ -76,6 +76,14 @@ Optionaler ADC: PCM1802 Stereo-A/D-Wandler
     <td>5V</td>
     <td>GND</td>
   </tr>
+  <tr>
+    <td>IR RECEIVER</td>
+    <td>GPIO39</td>
+    <td></td>
+    <td></td>
+    <td>3V3</td>
+    <td>GND</td>
+  </tr>
 </table>
 
 
