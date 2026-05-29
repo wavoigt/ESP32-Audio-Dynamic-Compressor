@@ -78,7 +78,7 @@ Optionaler ADC: PCM1802 Stereo-A/D-Wandler
   </tr>
   <tr>
     <td>IR RECEIVER</td>
-    <td>GPIO39</td>
+    <td>GPIO39 (IR_IN)</td>
     <td></td>
     <td></td>
     <td>3V3</td>
