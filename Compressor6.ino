@@ -42,8 +42,8 @@ Preferences preferences;
 WiFiServer wifi;
 HttpServer server(wifi);
 HttpParameters parameters;
-const char *ssid = "FRITZ7490V";
-const char *password = "zaubergarten16";
+const char *ssid = "YOUR_SSID";
+const char *password = "YOUR_PWD";
 TaskHandle_t TaskCore0; // Handle für den Task
 
 // Audio Format
