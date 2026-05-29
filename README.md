@@ -1,6 +1,6 @@
 # ESP32 Audio Dynamic Compressor / Limiter
 <b>mit digitalem Ein- und Ausgang und Analogausgang, optional mit analogem Eingang,<br>
-Web Interface über WiFi zur Steuerung, Programmierung über USB.
+Web Interface über WiFi und IR Remote zur Steuerung, Programmierung über USB.
 
 with digital input and output and analogue output, optionally with analogue input, <br>
 Web interface via WiFi for control, and programming via USB. English -> scroll down</b>
@@ -8,7 +8,7 @@ Web interface via WiFi for control, and programming via USB. English -> scroll d
 Ich verwende diese Schaltung zwischen TV und Soundsystem, um die zum Teil sehr hohe Dynamik von Spielfilmen einzuschränken.<br>
 Diese Anleitung ist nicht für Anfänger gedacht.<br> Grundlegende Kenntnisse in Programmierung mit der Arduino IDE setze ich voraus.
 
-![Compr_von_oben_kl](https://github.com/user-attachments/assets/a5108c59-f7f9-48c5-bd7a-d229d6821879)
+<img width="562" height="392" alt="Compr_von_oben" src="https://github.com/user-attachments/assets/46233b0e-0c26-4625-a222-e9f0eeea275c" />
 
 Web Interface<br>
 ![WebInterface](https://github.com/user-attachments/assets/570b3652-e841-4fad-b4c8-41f3cf9e4280)
@@ -81,7 +81,7 @@ Optionaler ADC: PCM1802 Stereo-A/D-Wandler, erhältlich bei Amazon
 <b>Software:</b>
 
 Die Software ist für die Arduino IDE gedacht.<br>
-- Compressor4.ino<br>
+- Compressor6.ino<br>
 - Audio Library https://github.com/pschatzmann/arduino-audio-tools (thx to pschatzmann for his great audio processing library)<br>
 - TinyHttp Library https://github.com/pschatzmann/TinyHttp<br>
 
