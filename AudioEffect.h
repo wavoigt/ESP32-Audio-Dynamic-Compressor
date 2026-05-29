@@ -484,7 +484,7 @@ public:
         // Release -> 10 ms -> 1000
         
         sample_rate = sampleRate; 
-	    current_gain = 1.0f;
+	      current_gain = 1.0f;
         ratio = compressionRatio;
         setThreshold(thresholdPercent);
         setAttack(attackMs);
@@ -516,7 +516,7 @@ public:
         else if (threshold < 0) threshold = 0;
     }
 
-    /// Defines the compression ratio from 1 to 100
+    /// Defines the compression ratio from 1 to 200
     void setCompressionRatio(float compressionRatio){
         if (compressionRatio < 1) compressionRatio = 1;
         ratio = compressionRatio;
