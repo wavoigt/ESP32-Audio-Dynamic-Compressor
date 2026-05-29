@@ -3,7 +3,7 @@
 Web Interface über WiFi und IR Remote zur Steuerung, Programmierung über USB.
 
 with digital input and output and analogue output, optionally with analogue input, <br>
-Web interface via WiFi for control, and programming via USB. English -> scroll down</b>
+Web interface via WiFi and IR Remote for control, and programming via USB. English -> scroll down</b>
 
 Ich verwende diese Schaltung zwischen TV und Soundsystem, um die zum Teil sehr hohe Dynamik von Spielfilmen einzuschränken.<br>
 Diese Anleitung ist nicht für Anfänger gedacht.<br> Grundlegende Kenntnisse in Programmierung mit der Arduino IDE setze ich voraus.
@@ -22,7 +22,8 @@ ToslinkBee SPDIF zu I2S Converter:<br>
 https://www.audiophonics.fr/en/interface-modules/tinysine-toslinkbee-interface-module-spdif-optical-to-i2s-dir9001-cs8421-24bit-96khz-p-18397.html<br>
 Optical Toslink Output Socket on PCB<br>
 https://www.audiophonics.fr/en/optical-toslink-plugs/optical-toslink-output-socket-on-pcb-p-17103.html<br>
-Optionaler ADC: PCM1802 Stereo-A/D-Wandler, erhältlich bei Amazon
+IR Empfänger TSOP4838 o.ä.<br>
+Optionaler ADC: PCM1802 Stereo-A/D-Wandler
 
 <b>Verdrahtung:</b>
 	
@@ -84,15 +85,17 @@ Die Software ist für die Arduino IDE gedacht.<br>
 - Compressor6.ino<br>
 - Audio Library https://github.com/pschatzmann/arduino-audio-tools (thx to pschatzmann for his great audio processing library)<br>
 - TinyHttp Library https://github.com/pschatzmann/TinyHttp<br>
+- Arduino IRremote https://github.com/Arduino-IRremote/Arduino-IRremote<br>
 
 <b>Anleitung:</b>
 
 Leider ist der Dynamic Compressor in der arduino-audio-tools library nur für mono Betrieb ausgelegt.<br>
 Für Stereo Betrieb musste ich die files AudioEffects.h and AudioEffect.h modifizieren.<br>
 Kopiere die files AudioEffects.h and AudioEffect.h in den Arduino library folder:<br>Arduino\libraries\audio-tools\src\AudioTools\CoreAudio\AudioEffects<br>
-Falls du die Original files verwenden möchtest, musst du die Zeilen mit 'Compressor_Stereo' und 'Compressor_Active' in der Compressor4.ino auskommentieren. 
+Falls du die Original files verwenden möchtest, musst du die Zeilen mit 'Compressor_Stereo' und 'Compressor_Active' in der Compressor6.ino auskommentieren. 
 Der Compressor arbeitet dann im mono Betrieb<br>
-Alles weitere siehe Compressor4.ino
+Die IR Remote muss in IR_Remote.h konfiguriert werden.
+Alles weitere siehe Compressor6.ino
 
 Der Compressor in der Original Library (AudioEffect.h) tut was er soll, aber bei hohen Kompressionsraten neigt er leider zur 'Überkompression', d.h bei lauten Passagen wird das Signal zu stark zurückgeregelt. <br>
 Ich habe ihn vollständig ersetzt durch einen Limiter, der sehr zufriedenstellend arbeitet<br>
@@ -109,9 +112,10 @@ Unfortunately, the Dynamic Compressor in the arduino-audio-tools library is only
 For stereo operation I had to modify the files AudioEffects.h and AudioEffect.h. <br>
 Copy the files AudioEffects.h and AudioEffect.h into the Arduino library folder: <br>
 Arduino\libraries\audio-tools\src\AudioTools\CoreAudio\AudioEffects <br>
-If you want to use the original files, you must comment out the lines with ‘Compressor_Stereo’ and ‘Compressor_Active’ in Compressor4.ino. <br>
+If you want to use the original files, you must comment out the lines with ‘Compressor_Stereo’ and ‘Compressor_Active’ in Compressor6.ino. <br>
 The compressor then works in mono mode. <br>
-For everything else, see Compressor4.ino <br>
+The IR Remote has to be configered in IR_Remote.h.
+For everything else, see Compressor6.ino <br>
 
 The compressor in the original library (AudioEffect.h) does what it should, but at high compression rates it unfortunately tends to ‘overcompress’, i.e. the signal is reduced too much in loud passages. <br>
 I replaced it completely with a limiter, which works very satisfactorily<br>
