@@ -102,8 +102,8 @@ Für Stereo Betrieb musste ich die files AudioEffects.h and AudioEffect.h modifi
 Kopiere die files AudioEffects.h and AudioEffect.h in den Arduino library folder:<br>Arduino\libraries\audio-tools\src\AudioTools\CoreAudio\AudioEffects<br>
 Falls du die Original files verwenden möchtest, musst du die Zeilen mit 'Compressor_Stereo' und 'Compressor_Active' in der Compressor6.ino auskommentieren. 
 Der Compressor arbeitet dann im mono Betrieb<br>
-Mit der IR Remote kann nur der Threshold eingestellt werden.
-Die IR Remote muss in IR_Remote.h konfiguriert werden.
+Mit der IR Remote kann nur der Threshold eingestellt werden.<br>
+Die IR Remote muss in IR_Remote.h konfiguriert werden.<br>
 Alles weitere siehe Compressor6.ino
 
 Der Compressor in der Original Library (AudioEffect.h) tut was er soll, aber bei hohen Kompressionsraten neigt er leider zur 'Überkompression', d.h bei lauten Passagen wird das Signal zu stark zurückgeregelt. <br>
@@ -123,8 +123,8 @@ Copy the files AudioEffects.h and AudioEffect.h into the Arduino library folder:
 Arduino\libraries\audio-tools\src\AudioTools\CoreAudio\AudioEffects <br>
 If you want to use the original files, you must comment out the lines with ‘Compressor_Stereo’ and ‘Compressor_Active’ in Compressor6.ino. <br>
 The compressor then works in mono mode. <br>
-With IR Remote you can change only the threshold.
-The IR Remote has to be configered in IR_Remote.h.
+With IR Remote you can change only the threshold.<br>
+The IR Remote has to be configered in IR_Remote.h.<br>
 For everything else, see Compressor6.ino <br>
 
 The compressor in the original library (AudioEffect.h) does what it should, but at high compression rates it unfortunately tends to ‘overcompress’, i.e. the signal is reduced too much in loud passages. <br>
