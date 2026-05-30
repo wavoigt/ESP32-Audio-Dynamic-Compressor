@@ -102,6 +102,7 @@ Für Stereo Betrieb musste ich die files AudioEffects.h and AudioEffect.h modifi
 Kopiere die files AudioEffects.h and AudioEffect.h in den Arduino library folder:<br>Arduino\libraries\audio-tools\src\AudioTools\CoreAudio\AudioEffects<br>
 Falls du die Original files verwenden möchtest, musst du die Zeilen mit 'Compressor_Stereo' und 'Compressor_Active' in der Compressor6.ino auskommentieren. 
 Der Compressor arbeitet dann im mono Betrieb<br>
+Mit der IR Remote kann nur der Threshold eingestellt werden.
 Die IR Remote muss in IR_Remote.h konfiguriert werden.
 Alles weitere siehe Compressor6.ino
 
@@ -122,6 +123,7 @@ Copy the files AudioEffects.h and AudioEffect.h into the Arduino library folder:
 Arduino\libraries\audio-tools\src\AudioTools\CoreAudio\AudioEffects <br>
 If you want to use the original files, you must comment out the lines with ‘Compressor_Stereo’ and ‘Compressor_Active’ in Compressor6.ino. <br>
 The compressor then works in mono mode. <br>
+With IR Remote you can change only the threshold.
 The IR Remote has to be configered in IR_Remote.h.
 For everything else, see Compressor6.ino <br>
 
